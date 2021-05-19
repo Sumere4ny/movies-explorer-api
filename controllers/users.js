@@ -71,7 +71,12 @@ module.exports.login = (req, res, next) => {
         { expiresIn: '7d' },
       );
       res
-        .send({ token, message: SUCCESS });
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ message: SUCCESS });
     })
     .catch(next);
 };
@@ -82,7 +87,7 @@ module.exports.logout = (req, res, next) => {
     token = null;
     res
       .cookie('jwt', token)
-      .send({ token, message: SUCCESS_LOGOUT });
+      .send({ message: SUCCESS_LOGOUT });
   } catch (err) {
     throw new BadRequestError({ message: BAD_REQUEST });
   }
