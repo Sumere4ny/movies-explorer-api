@@ -3,17 +3,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const { limiter } = require('./utils/limiter');
 const router = require('./routes/index');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const corsMiddleware = require('./middlewares/cors.js');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_PATH = 'mongodb://localhost:27017/bitfilmsdb' } = process.env;
 
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
+mongoose.connect(DB_PATH, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
@@ -24,10 +24,6 @@ app.options('*', corsMiddleware);
 app.use(corsMiddleware);
 
 app.use(helmet());
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-});
 
 app.use(requestLogger);
 app.use(limiter);

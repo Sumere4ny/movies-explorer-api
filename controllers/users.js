@@ -4,19 +4,31 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
+const NotUniqueEmail = require('../errors/NotUniqueEmail');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 const {
   CONFLICT, NOT_FOUND, BAD_REQUEST, SUCCESS, SUCCESS_LOGOUT,
-} = require('../constants');
+} = require('../utils/constants');
+
+const handleError = (err) => {
+  if (err.name === 'MongoError') {
+    throw new NotUniqueEmail({ message: 'Этот email уже используется' });
+  }
+  if (err.name === 'ValidationError' || err.name === 'CastError') {
+    throw new BadRequestError(err);
+  }
+};
+
+const handleIdNotFound = () => {
+  throw new NotFoundError({ message: NOT_FOUND });
+};
 
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: NOT_FOUND });
-    })
-    .then((user) => res.send({ data: user }))
+    .orFail(() => handleIdNotFound())
+    .then((user) => res.send(user))
+    .catch((err) => handleError(err))
     .catch(next);
 };
 
@@ -50,14 +62,9 @@ module.exports.updateUser = (req, res, next) => {
       new: true,
       runValidators: true,
     })
-    .orFail(() => new NotFoundError({ message: NOT_FOUND }))
-    .catch((err) => {
-      if (err instanceof NotFoundError) {
-        throw err;
-      }
-      throw new BadRequestError({ message: BAD_REQUEST });
-    })
+    .orFail(() => handleIdNotFound())
     .then((user) => res.send({ data: user }))
+    .catch((err) => handleError(err))
     .catch(next);
 };
 

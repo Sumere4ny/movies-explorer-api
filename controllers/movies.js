@@ -1,21 +1,17 @@
 const Movie = require('../models/movie');
 const BadRequestError = require('../errors/BadRequestError');
-const InternalServerError = require('../errors/InternalServerError');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 const {
-  BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, MOVIE_NOT_FOUND,
-} = require('../constants');
+  BAD_REQUEST, FORBIDDEN, MOVIE_NOT_FOUND,
+} = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
   const owner = req.user._id;
   Movie.find({ owner })
     .populate('user')
     .then((movies) => res.status(200).send({ movies }))
-    .catch((err) => {
-      throw new InternalServerError({ message: `${INTERNAL_SERVER_ERROR} ${err.message}` });
-    })
     .catch(next);
 };
 
