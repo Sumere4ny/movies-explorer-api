@@ -1,6 +1,6 @@
 const cors = require('cors');
 
-const whiteList = ['http://sumere4ny.students.nomoredomains.icu', 'https://sumere4ny.students.nomoredomains.icu', 'http://localhost:3000'];
+const whiteList = ['http://sumere4ny-movies.nomoredomains.rocks', 'https://sumere4ny-movies.nomoredomains.rocks', 'http://localhost:3001'];
 
 const corsOptions = {
   origin(origin, callback) {
