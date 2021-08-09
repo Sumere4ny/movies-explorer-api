@@ -83,7 +83,7 @@ module.exports.login = (req, res, next) => {
           httpOnly: true,
           sameSite: true,
         })
-        .send({ message: SUCCESS });
+        .send({ _id: user._id, message: SUCCESS });
     })
     .catch(next);
 };
