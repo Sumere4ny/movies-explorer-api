@@ -1,44 +1,44 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
-const helmet = require('helmet');
-const { limiter } = require('./utils/limiter');
-const router = require('./routes/index');
+const { errorHandler } = require('./middlewares/errorHandler');
+const { routes } = require('./routes');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const corsMiddleware = require('./middlewares/cors.js');
-const errorHandler = require('./middlewares/errorHandler');
+const { rateLimiter } = require('./middlewares/rateLimiter');
 
+const { PORT = 3000 } = process.env;
 const app = express();
-const { PORT = 3000, DB_PATH = 'mongodb://localhost:27017/bitfilmsdb' } = process.env;
+app.use(helmet());
 
-mongoose.connect(DB_PATH, {
+app.use(cors({
+  // origin: 'http://localhost:3000',
+  origin: 'https://movies-explorer.rizametov.com',
+  credentials: true,
+}));
+
+app.use(express.json());
+
+mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
-  useUnifiedTopology: true,
 });
 
-app.options('*', corsMiddleware);
-app.use(corsMiddleware);
-
-app.use(helmet());
-
 app.use(requestLogger);
-app.use(limiter);
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(rateLimiter);
 
 app.use(cookieParser());
 
-app.use('/', router);
+app.use(routes);
 
 app.use(errorLogger);
-
 app.use(errors());
-
 app.use(errorHandler);
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`App listenting on port ${PORT}`);
+});

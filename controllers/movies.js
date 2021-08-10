@@ -1,47 +1,82 @@
+const BadRequestError = require('../errors/400-bad-request-error');
+const UnauthorizedError = require('../errors/401-unauthorized-error');
+const NotFoundError = require('../errors/404-not-found-error');
 const Movie = require('../models/movie');
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
-const ForbiddenError = require('../errors/ForbiddenError');
 
-const {
-  BAD_REQUEST, FORBIDDEN, MOVIE_NOT_FOUND,
-} = require('../utils/constants');
+exports.getAllMovies = (req, res, next) => {
+  const userId = req.user._id;
 
-module.exports.getMovies = (req, res, next) => {
-  const owner = req.user._id;
-  Movie.find({ owner })
-    .populate('user')
-    .then((movies) => res.status(200).send({ movies }))
+  Movie.find({ owner: userId })
+    .then((movies) => res.send(movies))
     .catch(next);
 };
 
-module.exports.createMovie = (req, res, next) => {
+exports.createMovie = (req, res, next) => {
   const owner = req.user._id;
-  Movie.create({ owner, ...req.body })
+
+  const {
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailer,
+    nameRU,
+    nameEN,
+    thumbnail,
+    movieId,
+  } = req.body;
+
+  Movie.create({
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailer,
+    nameRU,
+    nameEN,
+    thumbnail,
+    movieId,
+    owner,
+  })
+    .then((movie) => res.send(movie))
     .catch((err) => {
-      throw new BadRequestError({ message: `${BAD_REQUEST} ${err.message}` });
-    })
-    .then((movie) => res.status(201).send({ data: movie }))
-    .catch(next);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 
-module.exports.deleteMovie = (req, res, next) => {
-  const owner = req.user._id;
-  const { _id } = req.params;
-  Movie.findById(_id)
-    .orFail()
-    .catch(() => {
-      throw new NotFoundError({ message: MOVIE_NOT_FOUND });
+exports.removeMovie = (req, res, next) => {
+  const { movieId } = req.params;
+  const userId = req.user._id;
+
+  Movie.findById(movieId)
+    .orFail(() => {
+      throw new NotFoundError('Фильм не найден');
     })
     .then((movie) => {
-      if (movie.owner.toString() !== owner) {
-        throw new ForbiddenError({ message: FORBIDDEN });
+      if (movie.owner.toString() !== userId) {
+        throw new UnauthorizedError(
+          'Это не ваш фильм. Вы не можете удалять чужие',
+        );
       }
-      Movie.findByIdAndDelete(_id)
-        .then((deletedMovie) => {
-          res.send({ data: deletedMovie });
-        })
+
+      Movie.findByIdAndRemove(movieId)
+        .then((movieToRemove) => res.send(movieToRemove))
         .catch(next);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
+      }
     })
     .catch(next);
 };

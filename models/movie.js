@@ -1,76 +1,63 @@
-const mongoose = require('mongoose');
 const validator = require('validator');
+const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema({
   country: {
     type: String,
-    required: true,
+    required: [true, 'Поле "country" должно быть заполнено'],
   },
   director: {
     type: String,
-    required: true,
+    required: [true, 'Поле "director" должно быть заполнено'],
   },
   duration: {
     type: Number,
-    required: true,
+    required: [true, 'Поле "duration" должно быть заполнено'],
   },
   year: {
     type: String,
-    required: true,
+    required: [true, 'Поле "year" должно быть заполнено'],
   },
   description: {
     type: String,
-    required: true,
+    required: [true, 'Поле "description" должно быть заполнено'],
   },
   image: {
     type: String,
-    required: true,
+    required: [true, 'Поле "image" должно быть заполнено'],
     validate: {
-      validator(link) {
-        return validator.isURL(link);
-      },
-      message: 'Введён некорректный URL',
+      validator: (url) => validator.isURL(url),
     },
   },
   trailer: {
     type: String,
-    required: true,
+    required: [true, 'Поле "trailer" должно быть заполнено'],
     validate: {
-      validator(link) {
-        return validator.isURL(link);
-      },
-      message: 'Некоректно введён URL',
+      validator: (url) => validator.isURL(url),
     },
   },
   thumbnail: {
     type: String,
-    required: true,
+    required: [true, 'Поле "thumbnail" должно быть заполнено'],
     validate: {
-      validator(link) {
-        return validator.isURL(link);
-      },
-      message: 'Некоректно введён URL',
+      validator: (url) => validator.isURL(url),
     },
   },
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: 'user',
-    // select: false, // не возвращаем из базы
+    type: mongoose.ObjectId,
+    required: [true, 'Поле "owner" должно быть заполнено'],
   },
   movieId: {
     type: Number,
-    required: true,
-    //  ref: 'user',        user не связан с movieId
-    // select: false, // не возвращаем из базы
+    required: [true, 'Поле "movieId" должно быть заполнено'],
   },
   nameRU: {
     type: String,
-    required: true,
+    required: [true, 'Поле "nameRU" должно быть заполнено'],
   },
   nameEN: {
     type: String,
-    required: true,
+    required: [true, 'Поле "nameEN" должно быть заполнено'],
   },
 });
 

@@ -1,69 +1,62 @@
-const { celebrate, Joi, CelebrateError } = require('celebrate');
-const validator = require('validator');
+const { celebrate, Joi } = require('celebrate');
+const { default: validator } = require('validator');
 
-const urlValidation = (value) => {
-  if (!validator.isURL(value)) {
-    throw new CelebrateError('Некорректный URL');
+function validateLink(value, helpers) {
+  if (validator.isURL(value)) {
+    return value;
   }
-  return value;
-};
+  return helpers.message('Заполните поле валидным URL');
+}
 
-const validateMovie = celebrate({
-  body: Joi.object().keys({
-    country: Joi.string().required().min(2).max(30),
-    director: Joi.string().required().min(2).max(30),
-    duration: Joi.number().required().min(1).max(1000),
-    year: Joi.string().required().min(2).max(4),
-    description: Joi.string().required().min(2).max(3000),
-    image: Joi.string().custom(urlValidation).required(),
-    trailer: Joi.string().custom(urlValidation).required(),
-    nameRU: Joi.string().required().min(2).max(30),
-    nameEN: Joi.string().required().min(2).max(30),
-    movieId: Joi.number().positive().required().min(1)
-      .max(10000),
-    thumbnail: Joi.string().custom(urlValidation).required(),
-  }),
-});
-
-const validateId = celebrate({
-  params: Joi.object().keys({
-    _id: Joi.string().length(24).hex(),
-  }),
-});
-
-const createUserValidation = celebrate({
+const validateSignUp = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required().min(3),
     name: Joi.string().required().min(2).max(30),
   }),
 });
 
-const loginValidation = celebrate({
+const validateSignIn = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required().min(3),
   }),
 });
 
-const getUserByIdValidation = celebrate({
-  params: Joi.object().keys({
-    userId: Joi.string().required().length(24).hex(),
-  }),
-});
-
-const updateUserProfileValidation = celebrate({
+const validateUserUpdateProfile = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    email: Joi.string().email(),
+    email: Joi.string().required().email(),
+    name: Joi.string().required().min(2).max(30),
+  }),
+});
+
+const validateCreateMovie = celebrate({
+  body: Joi.object().keys({
+    country: Joi.string().required(),
+    director: Joi.string().required(),
+    duration: Joi.number().integer(),
+    year: Joi.string().required(),
+    description: Joi.string().required(),
+    image: Joi.string().required().custom(validateLink),
+    trailer: Joi.string().required().custom(validateLink),
+    nameRU: Joi.string().required(),
+    nameEN: Joi.string().required(),
+    thumbnail: Joi.string().required().custom(validateLink),
+    movieId: Joi.number().integer(),
+    owner: Joi.string().hex().length(24),
+  }),
+});
+
+const validateRemoveMovie = celebrate({
+  params: Joi.object().keys({
+    movieId: Joi.string().hex().length(24),
   }),
 });
 
 module.exports = {
-  validateMovie,
-  validateId,
-  createUserValidation,
-  loginValidation,
-  getUserByIdValidation,
-  updateUserProfileValidation,
+  validateSignUp,
+  validateSignIn,
+  validateUserUpdateProfile,
+  validateCreateMovie,
+  validateRemoveMovie,
 };
