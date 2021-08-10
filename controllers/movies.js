@@ -27,7 +27,7 @@ module.exports.createMovie = (req, res, next) => {
 
 module.exports.deleteMovie = (req, res, next) => {
   const owner = req.user._id;
-  const { movieId } = req.params;
+  const { _id } = req.params;
   Movie.findById(movieId)
     .orFail()
     .catch(() => {
@@ -37,7 +37,7 @@ module.exports.deleteMovie = (req, res, next) => {
       if (movie.owner.toString() !== owner) {
         throw new ForbiddenError({ message: FORBIDDEN });
       }
-      Movie.findByIdAndDelete(movieId)
+      Movie.findByIdAndDelete(_id)
         .then((deletedMovie) => {
           res.send(deletedMovie);
         })
