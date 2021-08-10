@@ -47,10 +47,9 @@ module.exports.createUser = (req, res, next) => {
       } else next(err);
     })
     .then((user) => res.status(201).send({
-      data: {
         name, email, _id: user._id,
       },
-    }))
+    ))
     .catch(next);
 };
 
