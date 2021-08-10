@@ -15,8 +15,7 @@ const app = express();
 app.use(helmet());
 
 app.use(cors({
-  // origin: 'http://localhost:3000',
-  origin: 'https://movies-explorer.rizametov.com',
+  origin: ['http://sumere4ny-movies.nomoredomains.rocks', 'https://sumere4ny-movies.nomoredomains.rocks', 'http://localhost:3001'],
   credentials: true,
 }));
 
