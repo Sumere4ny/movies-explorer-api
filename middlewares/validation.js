@@ -17,8 +17,8 @@ const validateMovie = celebrate({
     description: Joi.string().required().min(2).max(3000),
     image: Joi.string().custom(urlValidation).required(),
     trailer: Joi.string().custom(urlValidation).required(),
-    nameRU: Joi.string().required().min(2).max(30),
-    nameEN: Joi.string().required().min(2).max(30),
+    nameRU: Joi.string().required().min(2).max(200),
+    nameEN: Joi.string().required().min(2).max(200),
     movieId: Joi.number().positive().required().min(1)
       .max(10000),
     thumbnail: Joi.string().custom(urlValidation).required(),
