@@ -62,7 +62,7 @@ module.exports.updateUser = (req, res, next) => {
       runValidators: true,
     })
     .orFail(() => handleIdNotFound())
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send({ user }))
     .catch((err) => handleError(err))
     .catch(next);
 };
